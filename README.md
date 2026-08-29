@@ -31,7 +31,7 @@ You get a `something.vercel.app` URL immediately. No config, no framework preset
 
 ## Three things before you send the link to Payoneer
 
-**1 · Replace the placeholder URL.** All five pages carry `https://indrabhattarai.vercel.app/` in
+**1 · Replace the placeholder URL.** All five pages carry `https://indrakumaribhattarai.vercel.app/` in
 their canonical and Open Graph tags, plus `sitemap.xml` and `robots.txt`. Find-and-replace it with
 your real URL once the site is live.
 
