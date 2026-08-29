@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Indra Kumari Bhattarai">
+  <rect width="64" height="64" rx="14" fill="#1A1917"/>
+  <!-- a frame with an inner column: the shape of a screen being laid out -->
+  <rect x="14" y="14" width="36" height="36" rx="5" fill="none" stroke="#FBFAF7" stroke-width="4"/>
+  <rect x="27" y="14" width="4" height="36" fill="#D9633F"/>
+</svg>

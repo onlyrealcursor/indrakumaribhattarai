@@ -1,0 +1,1106 @@
+@charset "utf-8";
+/* ============================================================================
+   Indra Kumari Bhattarai — product design
+   One stylesheet. No build step, no framework.
+
+   Order: faces · tokens · reset · type · layout · motion · then one block per
+   section in the order the page renders them.
+
+   One token set, one theming axis:
+     data-kit = ember | crimson | deepsea | violet
+   Every colour below was measured, not chosen by eye. Ratios are in comments.
+   ========================================================================= */
+
+/* ── FACES ────────────────────────────────────────────────────────────────
+   Instrument Serif carries every headline. Geist carries everything else.
+   A third family would make it look cheaper, not richer. The monospace is
+   the system stack — it costs nothing and reads as "specification".        */
+@font-face{font-family:'Geist';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/geist-400.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Geist';font-style:normal;font-weight:500;font-display:swap;src:url('../fonts/geist-500.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/instrumentserif-400.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url('../fonts/instrumentserif-400i.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* ── ANIMATABLE CUSTOM PROPERTIES ─────────────────────────────────────────
+   Registering the accent as <color> is what lets a kit change *interpolate*
+   instead of snapping. Baseline since July 2024; browsers without @property
+   still honour the values, they just switch instantly.                     */
+@property --accent      { syntax:'<color>'; inherits:true; initial-value:#A8391F }
+@property --accent-soft { syntax:'<color>'; inherits:true; initial-value:#F0D6C9 }
+@property --w1          { syntax:'<color>'; inherits:true; initial-value:#E2824A }
+@property --w2          { syntax:'<color>'; inherits:true; initial-value:#CA646E }
+@property --w3          { syntax:'<color>'; inherits:true; initial-value:#EEB464 }
+@property --sweep       { syntax:'<percentage>'; inherits:false; initial-value:0% }
+
+/* ── TOKENS ────────────────────────────────────────────────────────────────
+   LIGHT is the base. Dark redefines only what changes.                     */
+:root{
+  color-scheme:light;
+
+  /* surfaces — paper is warm, cards are pure white, so cards read as lifted.
+     Pure white everywhere is what made the first draft feel like a document. */
+  --paper:#FCFBF9;
+  --surface:#FFFFFF;
+  --sunken:#F5F3EE;
+
+  /* text — every value measured against --paper */
+  --ink:#15140F;      /* 17.83:1  headings, primary        */
+  --ink-2:#46443C;    /*  9.43:1  body prose               */
+  --ink-3:#5E5B53;    /*  6.56:1  labels, meta, captions   */
+  --faint:#A9A497;    /*  decoration only — never a word   */
+
+  --line:#E8E4DC;     /* 1.23:1 hairline  */
+  --line-2:#DAD5CB;   /* 1.41:1 stronger  */
+
+  /* the graph-paper texture */
+  --graph:rgba(21,20,15,.034);
+  --graph-pitch:8.5px;
+
+  /* shadow ink: warm, so shadows sit in the same light as the paper */
+  --sh:21,20,15;
+  --shadow-1:0 1px 2px rgba(var(--sh),.04);
+  --shadow-2:0 0 0 1px var(--line), 0 1px 2px rgba(var(--sh),.04), 0 16px 36px -18px rgba(var(--sh),.22);
+  --shadow-3:0 0 0 1px var(--line-2), 0 2px 4px rgba(var(--sh),.05), 0 30px 60px -22px rgba(var(--sh),.30);
+
+  /* the dark capsule used by buttons and the active nav pill */
+  --cap-1:#3A3730;
+  --cap-2:#15140F;
+  --cap-ink:#FFFFFF;
+
+  --ok:#1A9159;       /* availability dot — 3.88:1, above the 3:1 UI-component floor */
+
+  --wash-a:.92;       /* hero wash strength */
+
+  /* type */
+  --sans:'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --serif:'Instrument Serif', ui-serif, Georgia, 'Times New Roman', serif;
+  --mono:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* space */
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem;  --s5:1.5rem;
+  --s6:2rem;  --s7:3rem;  --s8:4.5rem; --s9:7rem;   --s10:10rem;
+
+  --wrap:1180px;
+  --gutter:clamp(1.25rem,4vw,2.5rem);
+  --pill:999px;
+  --r-lg:20px;
+  --r-md:14px;
+  --r-sm:10px;
+
+  /* ── MOTION ──────────────────────────────────────────────────────────────
+     Four curves, harvested from what the current Awwwards portfolio winners
+     actually ship. Five durations. Nothing outside this scale.
+
+     Interaction (the user is waiting on it)  <= 300ms.
+     Narrative  (the page is pacing itself)   600ms – 1.8s.               */
+  --e-out:cubic-bezier(.16,1,.3,1);        /* easeOutQuint — the house curve */
+  --e-expo:cubic-bezier(.19,1,.22,1);      /* large entrances                */
+  --e-inout:cubic-bezier(.72,0,.22,1);     /* reversible morphs              */
+  --e-back:cubic-bezier(.34,1.56,.64,1);   /* chips, toggles, small delight  */
+
+  --t-micro:150ms;    /* colour, opacity            */
+  --t-fast:220ms;     /* hover transform            */
+  --t-mid:380ms;      /* toggle, theme swap, morph  */
+  --t-slow:620ms;     /* entrance                   */
+  --t-reveal:900ms;   /* large scroll reveal        */
+
+  /* ── KITS ────────────────────────────────────────────────────────────────
+     Not invented. Sampled out of the postme.live screenshots themselves:
+     the crimson is the product's own brand theme, the deep sea is the
+     composer's chrome, the violet is its Studio accent. Ember is the site's
+     own.                                                                   */
+  --k-l:#A8391F;                                       /* ember   6.21:1 */
+  --k-soft-l:#F3DED2;
+  --k-w1:#FF9F33; --k-w2:#FF7F6B; --k-w3:#FFD05C;
+
+  --accent:var(--k-l);
+  --accent-soft:var(--k-soft-l);
+  --w1:var(--k-w1); --w2:var(--k-w2); --w3:var(--k-w3);
+}
+
+[data-kit="crimson"]{
+  --k-l:#AF1F26;                                       /* 6.66:1 */
+  --k-soft-l:#F6D9D9;
+  --k-w1:#FF8285; --k-w2:#F87FA4; --k-w3:#FFC0A6;
+}
+[data-kit="deepsea"]{
+  --k-l:#0E5A80;                                       /* 7.27:1 */
+  --k-soft-l:#D4E7F0;
+  --k-w1:#8AD4F2; --k-w2:#9DB8EE; --k-w3:#A6EEF0;
+}
+[data-kit="violet"]{
+  --k-l:#6539E8;                                       /* 6.15:1 */
+  --k-soft-l:#E3DBFA;
+  --k-w1:#BFA6FF; --k-w2:#E0B4FF; --k-w3:#A8BEFF;
+}
+
+
+
+/* ── RESET ─────────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+html{
+  -webkit-text-size-adjust:100%;scroll-behavior:smooth;
+  background:var(--paper);
+  /* Graph paper, drawn in CSS so it costs no request and never blurs. It lives
+     on <html> rather than <body>: a background box on body would paint over
+     the wash, which sits at z-index:-1. */
+  background-image:
+    repeating-linear-gradient(to right,  var(--graph) 0 1px, transparent 1px var(--graph-pitch)),
+    repeating-linear-gradient(to bottom, var(--graph) 0 1px, transparent 1px var(--graph-pitch));
+  transition:background-color var(--t-mid) var(--e-out);
+}
+body{margin:0}
+img,svg,video{display:block;max-width:100%;height:auto}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+h1,h2,h3,h4,p,figure,dl,dd,ul,ol,blockquote{margin:0}
+ul[class]{list-style:none;padding:0}
+a{color:inherit}
+:target{scroll-margin-top:96px}
+
+body{
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:1.0625rem;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:clip;
+  transition:color var(--t-mid) var(--e-out);
+}
+/* The very first paint must not animate — otherwise the page fades in from
+   the wrong palette when a stored theme is applied. */
+html:not(.theme-live),
+html:not(.theme-live) body{transition:none}
+
+/* ── LAYOUT ────────────────────────────────────────────────────────────── */
+.wrap{
+  width:100%;max-width:var(--wrap);margin-inline:auto;
+  padding-inline:var(--gutter);
+  position:relative;z-index:1;
+}
+.section{padding-block:clamp(2.75rem,5.5vw,4.75rem)}
+.section--flush{padding-top:0}
+.section--tight{padding-block:clamp(2.5rem,5vw,4rem)}
+
+/* ── THE RAILS ─────────────────────────────────────────────────────────────
+   Two hairlines at the container edges, running the height of the viewport,
+   so the page reads as drawn on a grid someone decided on. The left rail
+   doubles as a scroll-progress indicator where the browser can drive it off
+   the scroll position with no JavaScript at all.                           */
+.rails{
+  position:fixed;inset-block:0;left:50%;transform:translateX(-50%);
+  width:min(100%, var(--wrap));
+  border-inline:1px solid var(--line);
+  pointer-events:none;z-index:0;
+}
+.rails::before{
+  content:"";position:absolute;top:0;left:-1px;width:1px;height:100%;
+  background:var(--accent);opacity:.5;transform-origin:top;transform:scaleY(0);
+}
+@supports (animation-timeline:scroll()){
+  .rails::before{
+    animation:rail-fill linear both;
+    animation-timeline:scroll(root block);
+  }
+}
+@keyframes rail-fill{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+/* A section rule that carries crop marks where it meets the rails. */
+.marks::before,.marks::after,.mark{
+  position:absolute;width:7px;height:7px;pointer-events:none;
+  background:
+    linear-gradient(var(--line-2),var(--line-2)) center/7px 1px no-repeat,
+    linear-gradient(var(--line-2),var(--line-2)) center/1px 7px no-repeat;
+}
+
+.skip{
+  position:absolute;left:1rem;top:1rem;z-index:300;transform:translateY(-250%);
+  background:var(--ink);color:var(--paper);padding:.5rem 1rem;border-radius:8px;
+  font-size:.875rem;text-decoration:none;transition:transform var(--t-fast) var(--e-out);
+}
+.skip:focus{transform:translateY(0)}
+
+/* ── TYPE ──────────────────────────────────────────────────────────────────
+   Winners set their display type at -0.03em and let it get big. The old
+   -0.021em was leaving the line looking loose at 5rem.                     */
+.display{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(2.9rem,6.8vw,5.4rem);
+  line-height:1.0;letter-spacing:-.03em;
+}
+.em{font-style:italic;color:var(--accent);transition:color var(--t-mid) var(--e-out)}
+
+.label{
+  font-size:.6875rem;font-weight:500;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-3);line-height:1.4;
+}
+.mono{font-family:var(--mono);font-size:.75rem;letter-spacing:.02em;
+  font-variant-numeric:tabular-nums}
+
+/* ── FOCUS ─────────────────────────────────────────────────────────────── */
+:where(a,button,summary,[tabindex]):focus-visible{
+  outline:2px solid var(--accent);outline-offset:3px;border-radius:6px;
+}
+::selection{background:var(--accent);color:var(--surface)}
+
+/* ── MOTION PRIMITIVES ─────────────────────────────────────────────────────
+   Two devices, and everything on the site is built from them.
+
+   .reveal   — a block rises into place as it arrives. Driven by a rAF sweep
+               rather than IntersectionObserver, which was observed skipping
+               elements during fast scrolling; a skipped element here would
+               stay invisible for good.
+   .rise     — per-line headline entrance. Each line sits in its own clipped
+               box and slides up from below it. Line breaks are hard-coded
+               (every award site does this) so the mask always matches.     */
+.reveal-ready .reveal{opacity:0;transform:translateY(14px)}
+.reveal-ready .reveal.is-in{
+  opacity:1;transform:none;
+  transition:opacity var(--t-reveal) var(--e-out), transform var(--t-reveal) var(--e-out);
+}
+
+.rise{display:block;overflow:clip;padding-bottom:.06em;margin-bottom:-.06em}
+.rise > span{display:block}
+.reveal-ready .rise > span{transform:translateY(105%)}
+.reveal-ready .is-in .rise > span,
+.reveal-ready .rise.is-in > span{
+  transform:none;
+  transition:transform var(--t-reveal) var(--e-expo);
+}
+.reveal-ready .rise:nth-of-type(2) > span{transition-delay:70ms}
+.reveal-ready .rise:nth-of-type(3) > span{transition-delay:140ms}
+.reveal-ready .rise:nth-of-type(4) > span{transition-delay:210ms}
+
+/* Anything that fades in behind the headline follows it, never leads it. */
+.reveal-ready .lag{opacity:0;transform:translateY(10px)}
+.reveal-ready .lag.is-in{
+  opacity:1;transform:none;
+  transition:opacity var(--t-slow) var(--e-out) 260ms, transform var(--t-slow) var(--e-out) 260ms;
+}
+.reveal-ready .lag.is-in.lag--2{transition-delay:360ms}
+.reveal-ready .lag.is-in.lag--3{transition-delay:450ms}
+
+/* ── PAGE TRANSITIONS ──────────────────────────────────────────────────────
+   Cross-document view transitions: Chromium 126+, Safari 18.2+, Firefox.
+   Anything else simply navigates the old way — nothing to fall back to.   */
+@media (prefers-reduced-motion:no-preference){
+  @view-transition{navigation:auto}
+}
+::view-transition-old(root){animation:vt-out 180ms var(--e-inout) both}
+::view-transition-new(root){animation:vt-in 320ms var(--e-out) both}
+@keyframes vt-out{to{opacity:0;transform:translateY(-8px)}}
+@keyframes vt-in{from{opacity:0;transform:translateY(10px)}}
+/* The masthead is the same object on every page — it should not cross-fade. */
+.masthead{view-transition-name:masthead}
+::view-transition-group(masthead){animation-duration:var(--t-mid)}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+  .reveal-ready .reveal,.reveal-ready .lag{opacity:1!important;transform:none!important}
+  .reveal-ready .rise > span{transform:none!important}
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   MASTHEAD
+   Brand · availability · segmented nav · theme.
+   At the very top of the page it is nearly invisible; it gains its ground
+   and its rule as you scroll away from the hero. The base state is the
+   solid one, so a browser without scroll timelines gets the safe version.
+   ═══════════════════════════════════════════════════════════════════════ */
+.masthead{
+  position:sticky;top:0;z-index:100;
+  background:color-mix(in srgb, var(--paper) 74%, transparent);
+  backdrop-filter:saturate(180%) blur(18px);
+  -webkit-backdrop-filter:saturate(180%) blur(18px);
+  border-bottom:1px solid var(--line);
+}
+@supports (animation-timeline:scroll()){
+  @media (prefers-reduced-motion:no-preference){
+    /* At the top of the page the masthead has no rule under it — there is
+       nothing above the fold for it to divide. The rule arrives as content
+       starts passing underneath. The base state is the ruled one, so a
+       browser without scroll timelines gets the safe version.            */
+    .masthead{animation:mast-rule linear both;animation-timeline:scroll(root block);
+      animation-range:40px 150px}
+    @keyframes mast-rule{
+      from{border-bottom-color:transparent}
+      to  {border-bottom-color:var(--line)}
+    }
+  }
+}
+.masthead__in{display:flex;align-items:center;gap:var(--s4);min-height:66px}
+
+.brand{
+  display:inline-flex;align-items:center;gap:.55rem;
+  font-weight:500;letter-spacing:-.014em;text-decoration:none;
+  white-space:nowrap;
+}
+/* The mark: the same frame-and-column as the favicon, drawn at text size so
+   it sits with the name rather than beside it. */
+.brand__mark{width:17px;height:17px;flex:none;overflow:visible}
+.brand__mark .f{stroke:var(--ink);transition:stroke var(--t-mid) var(--e-out)}
+.brand__mark .c{fill:var(--accent);
+  transition:fill var(--t-mid) var(--e-out), transform var(--t-fast) var(--e-back)}
+.brand:hover .brand__mark .c{transform:translateX(3px)}
+
+/* Availability: a real state, not a badge. The dot breathes rather than
+   blinks — a blink reads as an alert, a breath reads as a pulse. */
+.avail{
+  display:inline-flex;align-items:center;gap:.45rem;
+  margin-inline-start:.9rem;padding:.22rem .62rem .22rem .52rem;
+  border-radius:var(--pill);font-size:.75rem;color:var(--ink-3);
+  box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap;
+}
+.avail i{
+  width:6px;height:6px;border-radius:50%;flex:none;
+  background:var(--ok);position:relative;
+}
+.avail i::after{
+  content:"";position:absolute;inset:-3px;border-radius:50%;
+  border:1px solid var(--ok);opacity:0;
+  animation:breathe 3.2s var(--e-out) infinite;
+}
+@keyframes breathe{
+  0%{opacity:.55;transform:scale(.55)}
+  70%,100%{opacity:0;transform:scale(1)}
+}
+
+.masthead__sp{margin-inline-start:auto}
+
+/* ── the segmented control ─────────────────────────────────────────────────
+   A lit capsule. The layered inset shadow is what sells it: a highlight on
+   the top inner edge, a lift on the bottom, a hairline ring, a whisper of
+   drop shadow.                                                             */
+.seg{
+  display:flex;align-items:center;gap:2px;position:relative;
+  padding:3px;border-radius:var(--pill);
+  background:color-mix(in srgb, var(--ink) 5%, transparent);
+  box-shadow:
+    inset 0 1.5px .5px -1px var(--surface),
+    inset 0 -1.5px .5px -1px var(--surface),
+    inset 0 -8px 8px 0 color-mix(in srgb, var(--surface) 70%, transparent),
+    inset 0 3px 1px 0 color-mix(in srgb, var(--ink) 3%, transparent),
+    0 1px .5px 0 color-mix(in srgb, var(--surface) 40%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ink) 9%, transparent),
+    0 4px 2px 0 color-mix(in srgb, var(--ink) 3.5%, transparent);
+}
+.seg a{
+  display:inline-flex;align-items:center;gap:.4em;position:relative;
+  padding:.44em .9em;border-radius:var(--pill);
+  font-size:.875rem;font-weight:500;letter-spacing:-.006em;
+  color:var(--ink-2);text-decoration:none;white-space:nowrap;
+  transition:color var(--t-fast) var(--e-out);
+}
+.seg a > *{position:relative;z-index:1}
+.seg a:hover{color:var(--ink)}
+.seg a[aria-current="page"]{color:var(--cap-ink)}
+.seg a[aria-current="page"]::before{
+  content:"";position:absolute;inset:0;border-radius:var(--pill);
+  background:linear-gradient(180deg,var(--cap-1) 0%,var(--cap-2) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--cap-ink) 20%, transparent),
+    inset 0 -1px 0 rgba(0,0,0,.4),
+    0 1px 2px rgba(var(--sh),.28);
+}
+.seg svg{width:13px;height:13px;flex:none;opacity:.9}
+
+
+
+/* ── responsive ──────────────────────────────────────────────────────────── */
+
+/* ── RAILS AND CROP MARKS ──────────────────────────────────────────────────
+   Both only exist where the content column has stopped growing and there is
+   real margin either side for them to sit in. Below that the rules simply run
+   to the edge of the viewport, which is a clean editorial layout in its own
+   right — and a crop mark 3.5px outside the viewport puts a horizontal
+   scrollbar on the page. Measured: the rail box and the rule box coincide
+   exactly at 1240 and above, so that is where they appear.                 */
+@media (max-width:1239px){
+  .rails{display:none}
+  .band::before,.band::after,
+  .facts::before,.facts::after,
+  .sec-head::before,.sec-head::after,
+  .mark{display:none}
+}
+
+@media (max-width:1040px){ .avail{display:none} }
+@media (max-width:660px){
+  .masthead__in{min-height:58px;gap:var(--s3)}
+  .brand{font-size:.9375rem}
+  .seg a{padding:.44em .68em;font-size:.8125rem}
+  .seg a span{display:none}          /* icons only, once space is tight */
+}
+/* Below ~440px the full legal name and the controls cannot share a line, and
+   the name must never be truncated — the Payoneer profile matches against it. */
+@media (max-width:440px){
+  .masthead__in{flex-wrap:wrap;row-gap:.55rem;padding-block:.7rem;min-height:0}
+  .brand{width:100%}
+  .masthead__sp{margin-inline-start:0}
+  .seg{margin-inline-end:auto}
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   HERO
+   Typographic, and it stays that way: the fold has to carry the claim and a
+   way to act on it, at 390px, without scrolling. The work arrives directly
+   underneath, at full width, where it has room to be seen.
+   ═══════════════════════════════════════════════════════════════════════ */
+.hero{
+  position:relative;overflow:clip;
+  padding-block:clamp(4.5rem,13vw,9.5rem) 0;
+}
+/* ── THE WASH ──────────────────────────────────────────────────────────────
+   Warm light entering the room from above. It belongs to the page, not to the
+   hero: it starts at the very top of the document so it sits *under* the
+   masthead while the masthead is still transparent, and it runs the full
+   viewport width so it never shows a vertical edge at the container.
+
+   Three overlapping sources rather than one, so the falloff never reads as a
+   single flat radial, and one radial mask fades it on both sides and downward
+   at once so it never meets an edge with a hard line. Its colours come from
+   the active kit. In dark it drops to a fifth — the same light there would
+   read as a glow, and a glow is the cheapest thing on the internet.        */
+.wash{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:-1;
+  width:min(100% - var(--gutter) * 2, var(--wrap));
+  height:clamp(340px,40vw,500px);
+  pointer-events:none;
+  opacity:var(--wash-a);
+  /* Three sources. Every radius is set so the colour reaches transparent
+     *before* the element edge — otherwise the container clips it and the rail
+     shows a hard vertical seam. The vertical fade is left to the mask, which
+     only ever works on one axis and so cannot reintroduce that seam.       */
+  background:
+    radial-gradient(58% 108% at 50% -12%,
+      var(--w1) 0%,
+      color-mix(in srgb, var(--w1) 50%, transparent) 42%,
+      transparent 78%),
+    radial-gradient(32% 82% at 26% -10%,
+      color-mix(in srgb, var(--w2) 50%, transparent) 0%, transparent 72%),
+    radial-gradient(36% 88% at 73% -10%,
+      color-mix(in srgb, var(--w3) 58%, transparent) 0%, transparent 74%);
+  filter:blur(14px);
+  -webkit-mask-image:linear-gradient(#000 0%, #000 26%, transparent 94%);
+          mask-image:linear-gradient(#000 0%, #000 26%, transparent 94%);
+  transition:opacity var(--t-mid) var(--e-out);
+}
+
+/* The wash is spent well above the first line of text at every width, so the
+   eyebrow sits on plain paper and takes the ordinary label colour. Verified by
+   sampling the rendered pixels at 320 through 2560. */
+.hero .label{margin-bottom:clamp(1.4rem,2.4vw,2rem)}
+.hero__h{font-size:clamp(2.6rem,5.6vw,4.75rem)}
+.hero__lead{
+  margin-top:clamp(1.4rem,2.4vw,2rem);max-width:38ch;
+  font-size:clamp(1.05rem,1.5vw,1.24rem);line-height:1.5;color:var(--ink-2);
+  text-wrap:pretty;
+}
+.cta{
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3) var(--s4);
+  margin-top:clamp(1.75rem,3vw,2.5rem);
+}
+
+/* ── BUTTONS ───────────────────────────────────────────────────────────────
+   The lit capsule: a gradient body, a bright top edge, a dark bottom edge,
+   and a chip that steps forward on hover.                                  */
+.btn{
+  display:inline-flex;align-items:center;gap:.7em;
+  padding:.62em .62em .62em 1.15em;
+  border-radius:var(--pill);
+  font-size:.9375rem;font-weight:500;letter-spacing:-.006em;line-height:1;
+  color:var(--cap-ink);text-decoration:none;
+  background:linear-gradient(180deg,var(--cap-1) 0%,var(--cap-2) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--cap-ink) 22%, transparent),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    0 1px 2px rgba(var(--sh),.24),
+    0 8px 18px -6px rgba(var(--sh),.34);
+  transition:transform var(--t-fast) var(--e-out), box-shadow var(--t-fast) var(--e-out),
+             background var(--t-mid) var(--e-out), color var(--t-mid) var(--e-out);
+}
+.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--cap-ink) 26%, transparent),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    0 2px 4px rgba(var(--sh),.22),
+    0 12px 24px -8px rgba(var(--sh),.42);
+}
+.btn:active{transform:translateY(0)}
+.btn__chip{
+  display:inline-grid;place-items:center;width:22px;height:22px;flex:none;
+  border-radius:var(--pill);
+  background:color-mix(in srgb, var(--cap-ink) 14%, transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb, var(--cap-ink) 20%, transparent);
+  transition:background-color var(--t-fast) var(--e-out), transform var(--t-fast) var(--e-back);
+}
+.btn:hover .btn__chip{
+  background:color-mix(in srgb, var(--cap-ink) 24%, transparent);transform:translateX(2px);
+}
+.btn__chip svg{width:11px;height:11px}
+
+.btn--quiet{
+  padding:.62em 1.15em;
+  color:var(--ink);background:none;
+  box-shadow:inset 0 0 0 1px var(--line-2);
+  transition:background-color var(--t-fast) var(--e-out), box-shadow var(--t-fast) var(--e-out),
+             color var(--t-mid) var(--e-out);
+}
+.btn--quiet:hover{
+  transform:none;background:color-mix(in srgb, var(--ink) 3%, transparent);
+  box-shadow:inset 0 0 0 1px var(--ink-3);
+}
+.btn--quiet .btn__chip{
+  background:color-mix(in srgb, var(--ink) 7%, transparent);box-shadow:none;
+}
+.btn--quiet:hover .btn__chip{background:color-mix(in srgb, var(--ink) 12%, transparent)}
+
+/* ── THE FACTS STRIP ───────────────────────────────────────────────────────
+   Four true things, between two ruled edges that run out to meet the rails so
+   the crop marks sit on a real intersection. Every number here is countable
+   from the screenshots further down this page.                             */
+.facts{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  gap:var(--s5) var(--s6);
+  margin-inline:calc(var(--gutter) * -1);
+  padding:clamp(1.35rem,2.6vw,1.9rem) var(--gutter);
+  border-block:1px solid var(--line);position:relative;
+}
+.facts--hero{margin-top:clamp(3rem,6vw,5rem)}
+.facts::before,.facts::after{
+  content:"";position:absolute;left:-3.5px;width:7px;height:7px;
+  background:
+    linear-gradient(var(--line-2),var(--line-2)) center/7px 1px no-repeat,
+    linear-gradient(var(--line-2),var(--line-2)) center/1px 7px no-repeat;
+}
+.facts::before{top:-3.5px}
+.facts::after{bottom:-3.5px}
+.facts .mark--tr{right:-3.5px;top:-3.5px}
+.facts .mark--br{right:-3.5px;bottom:-3.5px}
+.facts dt{margin-bottom:.4rem}
+.facts dd{
+  font-size:.9375rem;color:var(--ink-2);line-height:1.35;
+  display:flex;align-items:baseline;gap:.42em;
+}
+.facts dd b{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.75rem,3vw,2.3rem);line-height:.9;
+  letter-spacing:-.02em;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+
+/* A quiet third weight: not a button, not body text. Used where a second
+   action is genuinely secondary and two capsules would fight. */
+.quiet-link{
+  display:inline-flex;align-items:center;gap:.4em;
+  font-size:.9375rem;font-weight:500;color:var(--ink-2);text-decoration:none;
+  padding:.62em .2em;
+  transition:color var(--t-fast) var(--e-out);
+}
+.quiet-link svg{width:14px;height:14px;transition:transform var(--t-fast) var(--e-out)}
+.quiet-link:hover{color:var(--ink)}
+.quiet-link:hover svg{transform:translateY(2px)}
+
+/* ── THE BAND ──────────────────────────────────────────────────────────────
+   One italic serif line between two ruled edges that run out to meet the
+   rails, so the crop marks sit on a real intersection. It is the last thing
+   above the fold and the first thing that is not a claim.                  */
+.band{
+  margin-top:clamp(2.75rem,6vw,4.5rem);
+  margin-inline:calc(var(--gutter) * -1);
+  padding:clamp(1.1rem,2.2vw,1.6rem) var(--gutter);
+  border-block:1px solid var(--line);
+  position:relative;
+}
+.band p{
+  font-family:var(--serif);font-style:italic;
+  font-size:clamp(1.02rem,1.5vw,1.26rem);
+  line-height:1.45;color:var(--ink-2);
+  letter-spacing:.002em;max-width:64ch;
+}
+.band em{font-style:italic;color:var(--accent);transition:color var(--t-mid) var(--e-out)}
+.band::before,.band::after{
+  content:"";position:absolute;left:-3.5px;width:7px;height:7px;
+  background:
+    linear-gradient(var(--line-2),var(--line-2)) center/7px 1px no-repeat,
+    linear-gradient(var(--line-2),var(--line-2)) center/1px 7px no-repeat;
+}
+.band::before{top:-3.5px}
+.band::after{bottom:-3.5px}
+.band .mark--tr{right:-3.5px;top:-3.5px}
+.band .mark--br{right:-3.5px;bottom:-3.5px}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SELECTED WORK
+   The screenshots are the argument. Everything around them is scaffolding,
+   and the scaffolding is ruled rather than boxed so nothing competes with
+   the artwork for attention.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Section header: name on the left, index on the right, ruled beneath, with
+   crop marks where the rule meets the rails. */
+.sec-head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:var(--s5);
+  padding-bottom:var(--s4);
+  margin-inline:calc(var(--gutter) * -1);
+  padding-inline:var(--gutter);
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.sec-head::before,.sec-head::after{
+  content:"";position:absolute;bottom:-3.5px;width:7px;height:7px;
+  background:
+    linear-gradient(var(--line-2),var(--line-2)) center/7px 1px no-repeat,
+    linear-gradient(var(--line-2),var(--line-2)) center/1px 7px no-repeat;
+}
+.sec-head::before{left:-3.5px}
+.sec-head::after{right:-3.5px}
+
+.piece{margin-top:clamp(2rem,4vw,3.25rem)}
+.piece__title{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(2.1rem,4.2vw,3.15rem);
+  line-height:1;letter-spacing:-.025em;
+}
+.piece__title a{
+  text-decoration:none;position:relative;
+  background-image:linear-gradient(var(--accent),var(--accent));
+  background-size:0% 1px;background-position:0 96%;background-repeat:no-repeat;
+  transition:background-size 420ms var(--e-out), color var(--t-mid) var(--e-out);
+}
+.piece__title a:hover{background-size:100% 1px;color:var(--accent)}
+.piece__meta{
+  margin-top:var(--s3);font-size:.9375rem;color:var(--ink-3);
+  display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center;
+}
+/* Separators are drawn, not written — never a text node that has to meet a
+   contrast ratio, and never announced by a screen reader. */
+.piece__meta span + span::before{content:"/";color:var(--faint);margin-inline-end:var(--s4)}
+.piece__lead{
+  margin-top:var(--s5);max-width:52ch;
+  font-size:clamp(1.02rem,1.35vw,1.15rem);line-height:1.55;color:var(--ink-2);
+  text-wrap:pretty;
+}
+
+/* ── THE PLATE ─────────────────────────────────────────────────────────────
+   A ring rather than a border, so the corner radius never shows a seam, and
+   pure white ground so the plate lifts off the warm paper. The lift on hover
+   is 3px over 220ms — enough to feel alive, not enough to distract while
+   you are reading the screenshot.                                          */
+.card{
+  position:relative;display:block;overflow:hidden;isolation:isolate;
+  border-radius:var(--r-lg);background:var(--surface);
+  text-decoration:none;
+  box-shadow:
+    0 0 0 1px var(--line),
+    inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent),
+    0 1px 2px rgba(var(--sh),.04),
+    0 16px 36px -18px rgba(var(--sh),.20);
+  transition:transform var(--t-fast) var(--e-out), box-shadow var(--t-fast) var(--e-out);
+}
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:
+    0 0 0 1px var(--line-2),
+    inset 0 1px 0 color-mix(in srgb, #fff 65%, transparent),
+    0 2px 4px rgba(var(--sh),.05),
+    0 30px 60px -22px rgba(var(--sh),.28);
+}
+.card:active{transform:translateY(-1px)}
+.card img{width:100%;display:block;transition:filter var(--t-fast) var(--e-out)}
+.card:hover img{filter:saturate(1.04) brightness(1.015)}
+
+/* A light that follows the pointer. Fine pointers only — the JS never binds
+   the listener on touch, and the variables simply stay at their centre
+   defaults, which renders nothing.                                         */
+.lit::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  border-radius:inherit;opacity:0;
+  background:radial-gradient(38% 60% at var(--mx,50%) var(--my,50%),
+    color-mix(in srgb, #fff 34%, transparent) 0%, transparent 70%);
+  transition:opacity var(--t-fast) var(--e-out);
+}
+@media (hover:hover) and (pointer:fine){ .lit:hover::after{opacity:1} }
+
+/* Pills sit on the artwork, so they carry their own contrast: a blurred
+   backing, a hairline ring and a soft drop. Legible on any screenshot. */
+.card__tags{
+  position:absolute;left:14px;bottom:14px;z-index:3;
+  display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 28px);
+}
+.pill{
+  display:inline-flex;align-items:center;
+  padding:.34em .72em;border-radius:var(--pill);
+  font-size:.75rem;font-weight:500;letter-spacing:-.004em;line-height:1.3;
+  backdrop-filter:saturate(180%) blur(10px);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);
+  white-space:nowrap;
+}
+.pill--light{
+  background:rgba(255,255,255,.94);color:#15140F;
+  box-shadow:0 0 0 1px rgba(21,20,15,.10), 0 2px 6px rgba(21,20,15,.14);
+}
+.pill--dark{
+  background:rgba(16,15,12,.88);color:#FFFFFF;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 2px 6px rgba(21,20,15,.24);
+}
+
+/* Grid rhythm: a wide plate, then pairs. Never a uniform grid. */
+.plate{margin-top:clamp(1.75rem,3.5vw,2.75rem)}
+.duo{
+  display:grid;gap:clamp(.9rem,1.8vw,1.4rem);
+  grid-template-columns:1fr;
+  margin-top:clamp(.9rem,1.8vw,1.4rem);
+}
+@media (min-width:760px){ .duo{grid-template-columns:1fr 1fr} }
+.duo .card img{aspect-ratio:16/10;object-fit:cover;object-position:top center}
+
+.note{
+  margin-top:var(--s3);font-size:.8125rem;line-height:1.5;
+  color:var(--ink-3);max-width:56ch;
+}
+.note b{font-weight:500;color:var(--ink-2)}
+.more{margin-top:clamp(2rem,4vw,3rem)}
+
+/* ── THE IMAGE REVEAL ──────────────────────────────────────────────────────
+   A plate opens rather than fades: the clip inset relaxes to nothing while
+   the artwork settles the last 3% of its scale. Fading a large image in from
+   zero opacity reads as a loading state; opening it reads as a reveal.
+   Only ever applied when .reveal-ready is set, which requires scripting —
+   with JS off the plate is simply there.                                   */
+.reveal-ready .card.reveal,
+.reveal-ready .shot.reveal{
+  opacity:1;transform:none;
+  clip-path:inset(7% 7% 7% 7% round var(--r-lg));
+}
+.reveal-ready .card.reveal > picture,.reveal-ready .card.reveal > img,
+.reveal-ready .shot.reveal > .frame{transform:scale(1.035);transform-origin:center}
+.reveal-ready .card.reveal.is-in,
+.reveal-ready .shot.reveal.is-in{
+  clip-path:inset(0% 0% 0% 0% round var(--r-lg));
+  transition:clip-path var(--t-reveal) var(--e-expo);
+}
+.reveal-ready .card.reveal.is-in > picture,.reveal-ready .card.reveal.is-in > img,
+.reveal-ready .shot.reveal.is-in > .frame{
+  transform:none;
+  transition:transform var(--t-reveal) var(--e-expo);
+}
+@media (prefers-reduced-motion:reduce){
+  .reveal-ready .card.reveal,.reveal-ready .shot.reveal{clip-path:none!important}
+  .reveal-ready .card.reveal > picture,.reveal-ready .card.reveal > img,
+  .reveal-ready .shot.reveal > .frame{transform:none!important}
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   IN DETAIL
+   A whole screen at 570px wide renders its type at 36% and proves nothing.
+   These are the same pixels at roughly 1:1 — mounted, numbered, and each one
+   paired with the decision it is evidence for.
+   ═══════════════════════════════════════════════════════════════════════ */
+.specs{margin-top:clamp(1.5rem,3vw,2.25rem);counter-reset:spec}
+.spec{
+  display:grid;grid-template-columns:1fr;gap:clamp(1.1rem,2.4vw,1.75rem);
+  padding-block:clamp(1.6rem,3.2vw,2.4rem);
+  border-bottom:1px solid var(--line);
+  align-items:center;
+}
+.spec:first-child{border-top:1px solid var(--line)}
+@media (min-width:900px){
+  .spec{grid-template-columns:minmax(230px,1fr) minmax(0,1.75fr);gap:clamp(2rem,4vw,3.5rem)}
+  .spec--flip .spec__txt{order:2}
+  .spec--flip .spec__fig{order:1}
+}
+.spec__txt .n{
+  display:block;margin-bottom:var(--s3);
+  font-size:.6875rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);
+  font-variant-numeric:tabular-nums;transition:color var(--t-mid) var(--e-out);
+}
+.spec__txt h3{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.4rem,2.4vw,1.85rem);
+  line-height:1.1;letter-spacing:-.018em;margin-bottom:var(--s3);
+}
+.spec__txt p{color:var(--ink-2);font-size:.9375rem;line-height:1.55;max-width:40ch;text-wrap:pretty}
+
+/* The mount. A detail crop is a specimen: it sits on card, inside a hairline,
+   with a little air around it, rather than bleeding to the edge of a plate. */
+.spec__fig{
+  padding:clamp(.55rem,1.3vw,1rem);
+  border-radius:var(--r-md);
+  background:var(--sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.spec__fig img{
+  width:100%;border-radius:8px;display:block;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent),
+             0 2px 6px rgba(var(--sh),.06);
+}
+/* Never enlarge a crop past the pixels it actually has: every max-width here
+   is the crop's own width plus the mount's padding. A wide, short crop gets
+   the whole row instead of a column, because at 660px it would render its
+   14px interface type at nine pixels and prove nothing. */
+.spec__fig{margin-inline:auto}
+.spec__fig--sm{max-width:560px}
+.spec--wide{grid-template-columns:1fr}
+@media (min-width:900px){ .spec--wide{grid-template-columns:1fr;gap:clamp(1.2rem,2.4vw,1.8rem)} }
+.spec--wide .spec__txt{display:grid;gap:0 clamp(2rem,4vw,3.5rem);align-items:baseline}
+@media (min-width:900px){
+  .spec--wide .spec__txt{grid-template-columns:minmax(230px,1fr) minmax(0,1.75fr)}
+  .spec--wide .spec__txt .n{grid-column:1;grid-row:1}
+  .spec--wide .spec__txt h3{grid-column:1;grid-row:2;margin-bottom:0}
+  .spec--wide .spec__txt p{grid-column:2;grid-row:1 / span 2;max-width:52ch}
+}
+.spec--wide .spec__fig{max-width:1032px;width:100%}
+
+/* The re-skin, side by side and at the same scale: the strongest single piece
+   of evidence on the page, so it gets its own row and a shared caption. */
+.twin{display:grid;grid-template-columns:1fr 1fr;gap:clamp(.6rem,1.4vw,1rem)}
+.twin figure{margin:0}
+.twin img{width:100%;border-radius:8px;display:block;
+  aspect-ratio:248/254;object-fit:cover;object-position:top left;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent),
+             0 2px 6px rgba(var(--sh),.06)}
+.twin figcaption{
+  margin-top:.5rem;font-size:.6875rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SERVICES
+   A ruled list, not cards. Rules divide, nothing floats, no icons. Each row
+   states the work, then what actually arrives — the question a client is
+   really asking is what they will be handed.
+   ═══════════════════════════════════════════════════════════════════════ */
+.services{margin-top:clamp(1.5rem,3vw,2.25rem)}
+.services li{
+  display:grid;grid-template-columns:1fr;gap:var(--s2);
+  padding:clamp(1.35rem,2.6vw,1.9rem) var(--gutter);
+  margin-inline:calc(var(--gutter) * -1);
+  border-bottom:1px solid var(--line);
+  transition:background-color var(--t-fast) var(--e-out);
+}
+.services li:first-child{border-top:1px solid var(--line)}
+.services li:hover{background:color-mix(in srgb, var(--ink) 2%, transparent)}
+.services .n{
+  font-size:.6875rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.services h3{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.45rem,2.5vw,1.95rem);
+  line-height:1.08;letter-spacing:-.02em;
+}
+.services p{color:var(--ink-2);max-width:44ch;font-size:.9375rem}
+.services .out{
+  font-family:var(--mono);font-size:.6875rem;letter-spacing:.04em;
+  color:var(--ink-3);margin-top:var(--s2);max-width:none;
+}
+.services .out span:not(:last-child)::after{content:" ·";color:var(--faint)}
+@media (min-width:840px){
+  .services li{grid-template-columns:4.5rem 1fr 1.15fr;gap:0 var(--s6);align-items:baseline}
+  .services .n{padding-top:.5em}
+  .services .out{margin-top:var(--s3)}
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   ABOUT
+   The card on the left is a profile, not a placeholder: it reads as finished
+   whether or not a photograph is ever dropped into it.
+   ═══════════════════════════════════════════════════════════════════════ */
+.about{
+  display:grid;gap:clamp(2rem,5vw,3.5rem);
+  grid-template-columns:1fr;align-items:center;
+  margin-top:clamp(2rem,4vw,3rem);
+}
+@media (min-width:880px){ .about{grid-template-columns:340px 1fr} }
+
+.profile{
+  border-radius:var(--r-lg);overflow:hidden;background:var(--surface);
+  box-shadow:
+    0 0 0 1px var(--line),
+    inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent),
+    0 1px 2px rgba(var(--sh),.04),
+    0 16px 36px -18px rgba(var(--sh),.18);
+  max-width:340px;width:100%;
+}
+/* The image well. With a photograph it crops to 4:5; without one it holds the
+   mark on the kit's own tint, which is a decision rather than a gap. */
+.profile__face{
+  aspect-ratio:4/5;display:grid;place-items:center;position:relative;
+  overflow:hidden;
+  background:var(--accent-soft);
+  background-image:
+    repeating-linear-gradient(to right,  color-mix(in srgb, var(--accent) 10%, transparent) 0 1px, transparent 1px 17px),
+    repeating-linear-gradient(to bottom, color-mix(in srgb, var(--accent) 10%, transparent) 0 1px, transparent 1px 17px);
+  border-bottom:1px solid var(--line);
+  transition:background-color var(--t-mid) var(--e-out);
+}
+/* the two rails, and a crop mark where each meets the horizon */
+.profile__face::before,.profile__face::after{
+  content:"";position:absolute;inset-block:0;width:1px;
+  background:color-mix(in srgb, var(--accent) 26%, transparent);
+}
+.profile__face::before{left:22%}
+.profile__face::after{right:22%}
+.profile__face svg{position:relative;z-index:1;width:46%;height:auto}
+.profile__face img{width:100%;height:100%;object-fit:cover;display:block}
+.profile__face .f{stroke:var(--accent);transition:stroke var(--t-mid) var(--e-out)}
+.profile__face .c{fill:var(--accent);transition:fill var(--t-mid) var(--e-out)}
+.profile__body{padding:clamp(1rem,2vw,1.35rem)}
+.profile__name{font-weight:500;letter-spacing:-.012em;font-size:1rem}
+.profile__role{color:var(--ink-3);font-size:.875rem;margin-top:.15rem}
+.profile dl{
+  display:grid;grid-template-columns:auto 1fr;gap:.42rem var(--s4);
+  margin-top:var(--s4);padding-top:var(--s4);
+  border-top:1px solid var(--line);
+  font-size:.8125rem;
+}
+.profile dt{color:var(--ink-3)}
+.profile dd{color:var(--ink-2);text-align:right}
+.profile dd .dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--ok);margin-inline-end:.4em;vertical-align:.05em;
+}
+
+.about__lead{
+  font-family:var(--serif);
+  font-size:clamp(1.5rem,2.7vw,2.05rem);
+  line-height:1.14;letter-spacing:-.02em;
+  max-width:22ch;margin-bottom:var(--s5);
+}
+.about__body p{color:var(--ink-2);max-width:48ch;text-wrap:pretty}
+.about__body p + p{margin-top:var(--s4)}
+.about .more{margin-top:var(--s6)}
+
+/* ════════════════════════════════════════════════════════════════════════
+   CONTACT
+   The address is the action, so it is set at headline size and underlines
+   itself on hover rather than sitting inside a button.
+   ═══════════════════════════════════════════════════════════════════════ */
+.contact__lead{
+  margin-top:clamp(1.75rem,3.5vw,2.75rem);max-width:30ch;
+  font-family:var(--serif);
+  font-size:clamp(1.5rem,2.7vw,2.05rem);
+  line-height:1.14;letter-spacing:-.02em;
+}
+.mail{
+  display:inline-block;margin-top:clamp(1.25rem,2.6vw,2rem);
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.6rem,4.6vw,3.3rem);
+  line-height:1.06;letter-spacing:-.025em;
+  text-decoration:none;overflow-wrap:anywhere;
+  background-image:linear-gradient(var(--accent),var(--accent));
+  background-size:0% 1px;background-position:0 94%;background-repeat:no-repeat;
+  transition:background-size 420ms var(--e-out), color var(--t-mid) var(--e-out);
+}
+.mail:hover{background-size:100% 1px;color:var(--accent)}
+
+.meta{
+  display:flex;flex-wrap:wrap;gap:var(--s3) clamp(1.5rem,4vw,3.5rem);
+  margin-top:clamp(2rem,4vw,3rem);padding-top:var(--s5);
+  border-top:1px solid var(--line);font-size:.9375rem;color:var(--ink-2);
+}
+.meta b{font-weight:400;color:var(--ink-3)}
+.meta a{
+  text-decoration:none;border-bottom:1px solid var(--line-2);
+  transition:border-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+.meta a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ════════════════════════════════════════════════════════════════════════
+   FOOTER
+   Carries the four things Payoneer checks a site for — legal name, phone,
+   email and the address that matches the profile — on every page.
+   ═══════════════════════════════════════════════════════════════════════ */
+.foot{
+  border-top:1px solid var(--line);
+  padding-block:clamp(2.5rem,5vw,3.5rem) clamp(1.5rem,2.6vw,2rem);
+  position:relative;z-index:1;
+}
+.foot__grid{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.foot__brand{display:inline-flex;align-items:center;gap:.5rem;margin-bottom:var(--s3)}
+.foot__brand svg{width:15px;height:15px;flex:none}
+.foot__brand .f{stroke:var(--ink)}
+.foot__brand .c{fill:var(--accent);transition:fill var(--t-mid) var(--e-out)}
+.foot address{font-style:normal;font-size:.9375rem;color:var(--ink-2);line-height:1.7}
+.foot a{color:var(--ink-2);text-decoration:none;transition:color var(--t-fast) var(--e-out)}
+.foot a:hover{color:var(--ink)}
+.foot__links{display:flex;flex-direction:column;gap:var(--s2);font-size:.9375rem;align-items:flex-start}
+
+/* The closing mark: the legal name, set once at size. It is also the exact
+   string a verification reviewer is matching against. */
+.foot__sig{
+  margin-top:clamp(2.5rem,5vw,3.75rem);
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.75rem,6.4vw,4.2rem);
+  line-height:1;letter-spacing:-.03em;
+  color:var(--ink);
+}
+.foot__base{
+  display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);justify-content:space-between;
+  align-items:center;
+  margin-top:clamp(1.5rem,3vw,2.25rem);padding-top:var(--s5);
+  border-top:1px solid var(--line);font-size:.8125rem;color:var(--ink-3);
+}
+.foot__top{
+  display:inline-flex;align-items:center;gap:.4em;
+  color:var(--ink-3);text-decoration:none;
+}
+.foot__top svg{width:13px;height:13px;transition:transform var(--t-fast) var(--e-out)}
+.foot__top:hover svg{transform:translateY(-2px)}
+
+/* ════════════════════════════════════════════════════════════════════════
+   THE CONTROL
+   The case study's claim is that one stylesheet can wear several brands.
+   Rather than assert it again, this page carries the same mechanism: two
+   radio groups, one token set, no forked stylesheet. It is rendered only
+   when scripting is available — a control that cannot do anything is worse
+   than no control — and the class that reveals it is set in the document
+   head, before first paint, so it never shifts the layout.
+   ═══════════════════════════════════════════════════════════════════════ */
+.kit{display:none}
+.js .kit{display:grid;gap:clamp(1.1rem,2.2vw,1.6rem)}
+
+
+.kit fieldset{border:0;margin:0;padding:0;min-width:0}
+.kit legend{
+  padding:0;margin-bottom:var(--s3);
+  font-size:.6875rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+.kit__row{display:flex;flex-wrap:wrap;gap:var(--s2)}
+
+/* the swatches */
+.sw{position:relative;display:inline-grid;place-items:center;cursor:pointer}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.sw input + span{
+  display:block;width:26px;height:26px;border-radius:50%;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent),
+             inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
+  transition:transform var(--t-fast) var(--e-back), box-shadow var(--t-fast) var(--e-out);
+}
+.sw:hover input + span{transform:scale(1.08)}
+.sw input:checked + span{
+  box-shadow:0 0 0 1.5px var(--paper), 0 0 0 3.5px var(--ink),
+             inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
+}
+.sw input:focus-visible + span{
+  outline:2px solid var(--ink);outline-offset:4px;
+}
+/* Each swatch shows the kit it selects, in the theme currently on screen. */
+.sw--ember   input + span{background:#A8391F}
+.sw--crimson input + span{background:#AF1F26}
+.sw--deepsea input + span{background:#0E5A80}
+.sw--violet  input + span{background:#6539E8}
+
+
+/* Visually hidden, but still read aloud and still the accessible name for the
+   control it labels. */
+.vh{
+  position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;
+}
